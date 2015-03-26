@@ -1,18 +1,77 @@
-console.log("s=here");
-angular.module('weatherNews', []).controller("MainCtrl",
+angular.module('weatherNews', ['ui.router']).factory
+('postFactory', [function()
+	{
+		var o = {
+    	posts: []
+	};
+	return o;
+}]).config
+([
+	'$stateProvider',
+	'$urlRouterProvider',
+	function($stateProvider, $urlRouterProvider) 
+	{
+		$stateProvider
+		.state('home', 
+		{
+        	url: '/home',
+        	templateUrl: '/home.html',
+        	controller: 'MainCtrl'
+		})
+		.state('posts', 
+		{
+		    url: '/posts/{id}',
+    		templateUrl: '/posts.html',
+   		 	controller: 'PostCtrl'
+		});
+		$urlRouterProvider.otherwise('home');
+	}
+]).controller('PostCtrl', 
 [
 	'$scope',
-	function($scope)
+	'$stateParams',
+	'postFactory', 
+	function($scope, $stateParams, postFactory)
 	{
-		$scope.test = "Sup, yo?";
-		$scope.posts = [
-			"post1",
-			"post2",
-			"post3",
-			"post4",
-			"post5",
-			"post6"
-		];
+		$scope.post = postFactory.posts[$stateParams.id];
+		$scope.addComment = function()
+		{
+			if($scope.body === '') { return; }
+			$scope.post.comments.push(
+			{
+				body: $scope.body,
+				upvotes: 0
+			});
+			$scope.body = '';
+		};
+	$scope.incrementUpvotes = function(comment)
+	{
+		comment.upvotes += 1; 
+	};
+}]).controller("MainCtrl",
+[
+	'$scope',
+	'postFactory',
+	function($scope, postFactory)
+	{
+	   	$scope.posts = postFactory.posts;
+
+		$scope.addPost = function()
+		{
+			if($scope.formContent === '') { return; }
+			$scope.posts.push(
+			{
+				title: $scope.formContent,
+				upvotes: 0,
+				comments: [ ]
+			});
+			$scope.formContent = '';
+		};
+
+		$scope.incrementUpvotes = function(post) 
+		{
+    		post.upvotes += 1;
+		};
 	}
 ]);
-console.log("now");
+
